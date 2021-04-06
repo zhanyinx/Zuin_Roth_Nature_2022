@@ -1,0 +1,81 @@
+import glob
+import os
+samples_file = glob.glob("raw/*fastq.gz")
+samples_name = [os.path.basename(x).replace(".fastq.gz", "") for x in samples_file]
+cassettegenome="cassette/cassette.fa"
+vectorgenome="cassette/vectors.fa"
+mm9genome="/work2/ggiorget/zhan/fullgenomes/mm9.fa"
+cassette="251"
+
+
+rule all:
+	input:
+		expand("statistics/{sample}.txt", sample=samples_name)
+
+rule mapping:
+	input:
+		genome={cassettegenome},
+		fastq=expand("raw/{sample}.fastq.gz", sample=samples_name)
+	output:
+		expand("mapped/{sample}.sam", sample=samples_name)
+	shell:
+		"minimap2 -a -x map-ont {input.genome} {input.fastq} -o {output}"
+
+rule sorting:
+	input:
+		expand("mapped/{sample}.sam", sample=samples_name)
+	output:
+		expand("processed/{sample}.sorted.bam", sample=samples_name)
+	shell:
+		"samtools view -Sb {input} | samtools sort > {output}"
+
+rule indexing:
+	input:
+		expand("processed/{sample}.sorted.bam", sample=samples_name)
+	output:
+		expand("processed/{sample}.sorted.bam.bai", sample=samples_name)
+	shell:
+		"samtools index	{input}"
+
+
+
+rule mapping_genome:
+	input:
+		genome={mm9genome},
+		fastq=expand("raw/{sample}.fastq.gz", sample=samples_name)
+	output:
+		expand("mapped/{sample}.genome.sam", sample=samples_name)
+	shell:
+        	"minimap2 -a -x map-ont {input.genome} {input.fastq} -o {output}"
+
+
+
+rule sorting_genome:
+	input:
+		expand("mapped/{sample}.genome.sam", sample=samples_name)
+	output:
+		expand("processed/{sample}.sorted.genome.bam", sample=samples_name)
+	shell:
+		"samtools view -Sb {input} | samtools sort > {output}"
+
+rule indexing_genome:
+	input:
+		expand("processed/{sample}.sorted.genome.bam", sample=samples_name)
+	output:
+		expand("processed/{sample}.sorted.genome.bam.bai", sample=samples_name)
+	shell:
+		"samtools index {input}"
+
+
+rule quality:
+	input:
+		bai=expand("processed/{sample}.sorted.bam.bai", sample=samples_name),
+		bam=expand("processed/{sample}.sorted.bam", sample=samples_name),
+		bamgenome=expand("processed/{sample}.sorted.genome.bam", sample=samples_name),
+		baigenome=expand("processed/{sample}.sorted.genome.bam.bai", sample=samples_name)
+	output:
+		expand("statistics/{sample}.txt", sample=samples_name)
+	shell:
+		"bash scripts/quality.check.sh {input.bam} {cassette} {input.bamgenome} > {output}"
+
+
