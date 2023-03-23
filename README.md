@@ -1,7 +1,7 @@
 [![Not Maintained](https://img.shields.io/badge/Maintenance%20Level-Not%20Maintained-yellow.svg)](https://gist.github.com/cheerfulstoic/d107229326a01ff0f333a1d3476e068d)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# Code for [Zuin, Roth et al., Nature 2021](https://www.nature.com/articles/s41586-022-04570-y)
+# Code for [Zuin, Roth et al., Nature 2022](https://www.nature.com/articles/s41586-022-04570-y)
 
 ## Content
 
